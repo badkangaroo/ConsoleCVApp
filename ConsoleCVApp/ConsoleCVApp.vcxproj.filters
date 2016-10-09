@@ -37,5 +37,8 @@
     <Image Include="..\image.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="blob.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
