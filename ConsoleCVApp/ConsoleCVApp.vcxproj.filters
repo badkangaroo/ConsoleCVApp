@@ -40,5 +40,8 @@
     <Image Include="blob.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="building.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

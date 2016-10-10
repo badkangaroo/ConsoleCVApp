@@ -12,24 +12,19 @@ using namespace cv;
 
 void something();
 
-void CannyThreshold(int, void*)
-{
 
-
-}
 
 int main()
 {
 	Mat img = imread("blob.jpg", CV_LOAD_IMAGE_ANYCOLOR);
 	namedWindow("processed", cv::WINDOW_OPENGL);
 	namedWindow("un processed", cv::WINDOW_OPENGL);
-	cout << img.cols;
+
 	// the Mat data type
 	Mat gimg = img.clone();
 	Size s;
 	s.height = 7;
 	s.width = 7;
-
 
 	GaussianBlur(img, gimg, s, 4.0, 4.0, 4);
 	Mat cHarris;
@@ -37,7 +32,46 @@ int main()
 	cornerHarris(cHarris, cHarris, 7, 5, 0.05, BorderTypes::BORDER_DEFAULT);
 	imshow("Corners", cHarris);
 
-	
+
+	Mat building = imread("building.jpg", CV_LOAD_IMAGE_ANYCOLOR);
+	//copy source image to a single channel grey image
+	Mat buildingG;
+	cvtColor(building, buildingG, COLOR_BGR2GRAY);
+	// get outlines of building in grey
+	Canny(buildingG, buildingG, 50, 200, 3);
+	// show the buildings lines
+	imshow("Building Canny", buildingG);
+
+	vector<Vec2f> lines;
+	HoughLines(buildingG, lines, 1, CV_PI / 180, 80);
+	cvtColor(buildingG, buildingG, COLOR_GRAY2BGR);
+	Mat buildingWithLines = building.clone();
+	for (size_t i = 0; i < lines.size(); i++)
+	{
+		float rho = lines[i][0];
+		float theta = lines[i][1];
+		double a = cos(theta), b = sin(theta);
+		double x0 = a*rho, y0 = b*rho;
+		Point pt1(cvRound(x0 + 100 * (-b)), cvRound(y0 + 100 * (a)));
+		Point pt2(cvRound(x0 - 100 * (-b)), cvRound(y0 - 100 * (a)));
+		line(buildingWithLines, pt1, pt2, Scalar(0, 0, 255), 1, LineTypes::LINE_AA, 0);
+	}
+	imshow("HoughLines on building", buildingWithLines);
+
+	// trying harris 2
+	Mat buildingH;
+	vector<Vec4i> linesB;
+	cvtColor(building, buildingH, COLOR_BGR2GRAY);
+	Canny(buildingH, buildingH, 50, 200, 3);
+	HoughLinesP(buildingH, linesB, 1, CV_PI / 180, 80, 30, 10);
+	Mat orig = building.clone();
+	for (size_t i = 0; i < linesB.size(); i++)
+	{
+		line(orig, Point(linesB[i][0], linesB[i][1]),
+		Point(linesB[i][2], linesB[i][3]), Scalar(0, 0, 255), 1, 8); 
+	}
+	imshow("Hough Prob", orig);
+
 	// start with an image with blobs
 	Mat gray = imread("blob.jpg", IMREAD_GRAYSCALE);
 	cvtColor(img, gray, COLOR_BGR2GRAY);
@@ -80,10 +114,9 @@ int main()
 	blur(greyEdges, detected_edges, Size(3, 3));
 
 
-	CannyThreshold(0, 0);
-
 	//Mat gimgWithKeyPoints;
 	//drawKeypoints( blobImage, blobKeyPoints, gimgWithKeyPoints,  Scalar(0, 0, 255), DrawMatchesFlags::DRAW_OVER_OUTIMG);
+
 
 
 	// doing something
