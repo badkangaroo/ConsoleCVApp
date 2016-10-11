@@ -233,7 +233,7 @@ int main()
 		return -1;
 
 	Mat edges;
-	namedWindow("edges", 1);
+	namedWindow("video edges", 1);
 	for (;;)
 	{
 		Mat frame;
@@ -241,7 +241,15 @@ int main()
 		cvtColor(frame, edges, CV_BGR2GRAY);
 		GaussianBlur(edges, edges, Size(7, 7), 1.5, 1.5);
 		Canny(edges, edges, 0, 30, 3);
-		imshow("edges", edges);
+		vector<Vec4i> linesC;
+		HoughLinesP(edges, linesC, 1, CV_PI / 180, 80, 30, 10);
+		cvtColor(edges, edges, COLOR_GRAY2BGR);
+		for (size_t i = 0; i < linesC.size(); i++)
+		{
+			line(edges, Point(linesC[i][0], linesC[i][1]),
+				Point(linesC[i][2], linesC[i][3]), Scalar(0, 255, 0), 1, 8);
+		}
+		imshow("video edges", edges);
 		if (waitKey(30) >= 0) break;
 	}
 
