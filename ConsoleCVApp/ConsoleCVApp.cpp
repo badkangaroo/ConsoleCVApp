@@ -74,6 +74,46 @@ void myHarris_function(int, void*)
 
 int main()
 {
+	// start with color image
+	Mat reddotsOrig = imread("reddots.jpg", CV_LOAD_IMAGE_ANYCOLOR);
+	
+	// make a Hue Saturation Value version
+	Mat reddotsHSV;
+	cvtColor(reddotsOrig, reddotsHSV, COLOR_BGR2HSV);
+	Scalar lower_red = Scalar(0, 150, 50);
+	Scalar upper_red = Scalar(255, 255, 255);
+	Mat redMask;
+	inRange(reddotsHSV, lower_red, upper_red, redMask);
+	GaussianBlur(redMask, redMask, Size(7, 7), 4.0, 4.0, 4);
+	SimpleBlobDetector::Params params;
+	params.minDistBetweenBlobs = 5.0f;
+	params.filterByInertia = false;
+	params.filterByConvexity = false;
+	params.filterByColor = false;
+	params.filterByCircularity = false;
+	params.filterByArea = true;
+	params.minArea = 1.0f;
+	params.maxArea = 150.0f;
+	Ptr<SimpleBlobDetector> detector = SimpleBlobDetector::create(params);
+
+	vector<KeyPoint> keyPoints;
+	cout << "starting" << endl;
+	detector->detect(redMask, keyPoints);
+	cout << "drawing" << endl;
+	drawKeypoints(reddotsOrig, keyPoints, reddotsOrig, Scalar(255, 255, 0), DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+	for (int i = 0; i < keyPoints.size(); i++)
+	{
+		ostringstream temp;
+		temp << i;
+		putText(reddotsOrig, temp.str(), Point(keyPoints[i].pt), FONT_HERSHEY_TRIPLEX, 0.20, Scalar(0, 0, 255), 1, CV_AA);
+		cout << i << endl;
+	}
+	imshow("counter", reddotsOrig);
+
+	waitKey(0);
+	return 0;
+
+
 	/// Load source image and convert it to gray
 	src = imread("building.jpg", CV_LOAD_IMAGE_ANYCOLOR);
 	cvtColor(src, src_gray, COLOR_BGR2GRAY);
@@ -238,18 +278,18 @@ int main()
 	{
 		Mat frame;
 		cap >> frame; // get a new frame from camera
+		Mat colorFrame = frame.clone();
 		cvtColor(frame, edges, CV_BGR2GRAY);
 		GaussianBlur(edges, edges, Size(7, 7), 1.5, 1.5);
 		Canny(edges, edges, 0, 30, 3);
 		vector<Vec4i> linesC;
 		HoughLinesP(edges, linesC, 1, CV_PI / 180, 80, 30, 10);
-		cvtColor(edges, edges, COLOR_GRAY2BGR);
 		for (size_t i = 0; i < linesC.size(); i++)
 		{
-			line(edges, Point(linesC[i][0], linesC[i][1]),
+			line(colorFrame, Point(linesC[i][0], linesC[i][1]),
 				Point(linesC[i][2], linesC[i][3]), Scalar(0, 255, 0), 1, 8);
 		}
-		imshow("video edges", edges);
+		imshow("video edges", colorFrame);
 		if (waitKey(30) >= 0) break;
 	}
 
