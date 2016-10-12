@@ -105,7 +105,7 @@ int main()
 	{
 		ostringstream temp;
 		temp << i;
-		putText(reddotsOrig, temp.str(), Point(keyPoints[i].pt), FONT_HERSHEY_TRIPLEX, 0.20, Scalar(0, 0, 255), 1, CV_AA);
+		putText(reddotsOrig, temp.str(), Point(keyPoints[i].pt), FONT_HERSHEY_TRIPLEX, 0.50, Scalar(0, 0, 255), 1, CV_AA);
 		cout << i << endl;
 	}
 	imshow("counter", reddotsOrig);
